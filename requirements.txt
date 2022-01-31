@@ -1,0 +1,14 @@
+# local package
+-e .
+
+# external requirements
+nb_black   # keep your code clean
+seaborn   # also includes numpy, scipy, pandas and matplotlib
+requests   # for APIs
+tqdm   # for progress bars
+streamlit   # build cool apps
+nbformat
+plotly plotly
+scikit-learn
+python-dotenv
+
