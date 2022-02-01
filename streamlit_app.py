@@ -34,13 +34,19 @@ if st.checkbox("Show Dataframe"):
 left_column, middle_column, right_column = st.columns([3, 1, 1])
 
 # Plotly Scatter Map
+hovertext = [f'Address: {street}, {place},<br>Rooms: {rooms}, Size: {round(size)}m²,<br>Rent: CHF {rent}'
+             for street, place, rooms, size, rent
+             in zip(df_proc["Adresse"], df_proc["Ort"], df_proc["Zimmer"],
+                    df_proc["Fläche"], df_proc["Mietpreis_Brutto"])]
+
 scatter_map = go.Figure(
     go.Scattermapbox(
         lon=df_proc["lon"],
         lat=df_proc["lat"],
         mode="markers",
         marker=go.scattermapbox.Marker(size=4),
-        text=df_proc["Adresse"],
+        text=hovertext,
+        hovertemplate='%{text}<extra></extra>'
     )
 )
 
