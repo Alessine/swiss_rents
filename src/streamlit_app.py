@@ -4,8 +4,8 @@ import plotly.graph_objects as go
 import json
 
 # User dependent variables
-raw_data = "data/raw"
-proc_data = "data/processed"
+raw_data = "../data/raw"
+proc_data = "../data/processed"
 
 # Secrets
 mapbox_access_token = st.secrets["MAPBOX_ACCESS_TOKEN"]
