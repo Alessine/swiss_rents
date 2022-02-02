@@ -1,11 +1,10 @@
 # external requirements
 nb_black
+numpy
+pandas
 seaborn
 requests
-tqdm
 streamlit
 nbformat
 plotly
 scikit-learn
-python-dotenv
-

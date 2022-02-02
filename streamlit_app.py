@@ -47,7 +47,7 @@ def create_scattermap(df, geojson, hover_strings, mapbox_token):
 
     scatter_map.update_layout(
         margin={"r": 0, "t": 35, "l": 0, "b": 0},
-        title="Location of Apartment Listings",
+        title="Location of Free Apartments",
         width=800,
         height=600,
         hovermode="closest",
