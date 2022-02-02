@@ -2,7 +2,9 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
+from plotly.subplots import make_subplots
 import json
+from copy import deepcopy
 
 
 # Functions
@@ -11,57 +13,62 @@ def load_data(raw_data, proc_data):
     df = pd.read_csv(proc_data)
     with open(raw_data) as response:
         geojson = json.load(response)
-    colors_qual = px.colors.qualitative.Bold
 
-    return df, geojson, colors_qual
+    return df, geojson
 
 
-@st.cache
-def create_scattermap(df, geojson, hover_strings, mapbox_token, colors):
-    trace_names = [
+def set_up_subplots():
+    colors = px.colors.qualitative.Bold
+
+    traces = [
         "below CHF 1200",
         "between CHF 1200-2000",
         "between CHF 2000-2800",
         "above CHF 2800",
     ]
 
-    scatter_map = go.Figure()
+    go_figure = make_subplots(
+        rows=2,
+        cols=2,
+        specs=[[{"colspan": 2, "type": "mapbox"}, None], [{}, {}]],
+        horizontal_spacing=0.07,
+        vertical_spacing=0.07,
+        subplot_titles=("First Subplot", "Second Subplot", "Third Subplot"),
+    )
+    return go_figure, colors, traces
+
+
+def add_scattermap_traces(df, go_figure, colors, traces):
+    hover_strings = [
+        f"Address: {street}, {place},<br>Rooms: {rooms}, Size: {round(size)}m²,<br>Rent: CHF {rent}"
+        for street, place, rooms, size, rent in zip(
+            df["Adresse"],
+            df["Ort"],
+            df["Zimmer"],
+            df["Fläche"],
+            df["Mietpreis_Brutto"],
+        )
+    ]
 
     for cat, df_grouped in df.groupby("Miete_Kategorie"):
-        scatter_map.add_trace(
+        go_figure.add_trace(
             go.Scattermapbox(
                 lon=df_grouped["lon"],
                 lat=df_grouped["lat"],
                 mode="markers",
-                marker=go.scattermapbox.Marker(
-                    size=5, color=colors[cat], opacity=0.5
-                ),
+                marker=go.scattermapbox.Marker(size=5, color=colors[cat], opacity=0.6),
                 text=hover_strings,
                 hovertemplate="%{text}<extra></extra>",
-                name=trace_names[cat],
-            )
+                name=traces[cat],
+                legendgroup=str(cat),
+            ),
+            row=1,
+            col=1,
         )
-
-    scatter_map.update_layout(
-        margin={"r": 0, "t": 35, "l": 0, "b": 0},
-        title="Location of Free Apartments",
-        width=800,
-        height=600,
-        hovermode="closest",
-        mapbox=dict(
-            accesstoken=mapbox_token,
-            bearing=0,
-            center=go.layout.mapbox.Center(lat=46.8, lon=8.3),
-            pitch=0,
-            zoom=6.7,
-            layers=[{"source": geojson, "type": "line", "line_width": 1}],
-        ),
-    )
-    return scatter_map
+    return go_figure
 
 
-@st.cache
-def create_barplot(df, colors):
+def add_barplot_traces(df, go_figure, colors, traces):
     df_grouped = (
         df.groupby(["Kanton", "Miete_Kategorie"])
         .size()
@@ -70,37 +77,63 @@ def create_barplot(df, colors):
         .sort_values("Kanton", ascending=False)
         .reset_index()
     )
-
-    barplot = go.Figure()
-
-    trace_names = [
-        "below CHF 1200",
-        "between CHF 1200-2000",
-        "between CHF 2000-2800",
-        "above CHF 2800",
-    ]
     for cat in df["Miete_Kategorie"].unique():
-        barplot.add_trace(
+        go_figure.add_trace(
             go.Bar(
                 y=df_grouped["Kanton"],
                 x=df_grouped.loc[:, cat],
-                name=trace_names[cat],
+                name=traces[cat],
                 orientation="h",
                 marker_color=colors[cat],
-            )
+                legendgroup=str(cat),
+                showlegend=False,
+            ),
+            row=2,
+            col=2,
         )
+    return go_figure
 
-    barplot.update_layout(
-        barmode="stack",
-        margin={"r": 0, "t": 35, "l": 0, "b": 0},
-        title="Number of Listings by Kanton",
-        width=400,
-        height=600,
+
+def define_figure_layout(go_figure, mapbox_token):
+    go_figure.update_layout(
+        margin={"r": 0, "t": 0, "l": 0, "b": 0},
+        # autosize=True,
+        width=750,
+        height=1000,
+        hovermode="closest",
+        mapbox=dict(
+            accesstoken=mapbox_token,
+            bearing=0,
+            center=go.layout.mapbox.Center(lat=46.8, lon=8.3),
+            pitch=0,
+            zoom=6.7,
+            layers=[{"source": cantons, "type": "line", "line_width": 1}],
+        ),
+        legend=dict(orientation="h", yanchor="top", y=0.53, xanchor="center", x=0.5),
         template="simple_white",
-        legend=dict(orientation="h", yanchor="top", y=-0.05, xanchor="left", x=-0.05),
+        barmode="stack",
+    )
+    return go_figure
+
+
+def build_combined_figure(df, mapbox_token):
+    go_figure, colors, traces = set_up_subplots()
+
+    # Scattermapbox
+    go_figure = add_scattermap_traces(
+        df,
+        go_figure,
+        colors,
+        traces,
     )
 
-    return barplot
+    # Bar plot
+    go_figure = add_barplot_traces(df, go_figure, colors, traces)
+
+    # Layout
+    go_figure = define_figure_layout(go_figure, mapbox_token)
+
+    return go_figure
 
 
 # User dependent variables
@@ -113,8 +146,8 @@ mapbox_access_token = st.secrets["MAPBOX_ACCESS_TOKEN"]
 
 
 # Load the data
-df_proc, cantons, quali_colorscale = load_data(raw_data_path, proc_data_path)
-df_plotting = df_proc.copy()
+df_proc, cantons = load_data(raw_data_path, proc_data_path)
+df_plotting = deepcopy(df_proc)
 
 
 # App layout
@@ -133,18 +166,9 @@ with st.sidebar.form("Search Criteria"):
                                   (df_plotting["Zimmer"] >= num_rooms)]
 
 
-# Plotly Scatter Map
-hovertext = [f'Address: {street}, {place},<br>Rooms: {rooms}, Size: {round(size)}m²,<br>Rent: CHF {rent}'
-             for street, place, rooms, size, rent
-             in zip(df_plotting["Adresse"], df_plotting["Ort"], df_plotting["Zimmer"],
-                    df_plotting["Fläche"], df_plotting["Mietpreis_Brutto"])]
-
-st.plotly_chart(create_scattermap(df_plotting, cantons, hovertext, mapbox_access_token, quali_colorscale))
-
-
-# Plotly Bar Chart
-left_column, right_column = st.columns([1, 1])
-right_column.plotly_chart(create_barplot(df_plotting, quali_colorscale))
+# Plotly Combined Plot
+joint_fig = build_combined_figure(df=df_plotting, mapbox_token=mapbox_access_token)
+st.plotly_chart(joint_fig)
 
 
 # Show the data itself
