@@ -1,5 +1,4 @@
 import streamlit as st
-import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
@@ -29,20 +28,19 @@ def create_scattermap(df, geojson, hover_strings, mapbox_token, colors):
     scatter_map = go.Figure()
 
     for cat, df_grouped in df.groupby("Miete_Kategorie"):
-        if cat in df["Miete_Kategorie"].values:
-            scatter_map.add_trace(
-                go.Scattermapbox(
-                    lon=df_grouped["lon"],
-                    lat=df_grouped["lat"],
-                    mode="markers",
-                    marker=go.scattermapbox.Marker(
-                        size=5, color=colors[cat], opacity=0.5
-                    ),
-                    text=hover_strings,
-                    hovertemplate="%{text}<extra></extra>",
-                    name=trace_names[cat],
-                )
+        scatter_map.add_trace(
+            go.Scattermapbox(
+                lon=df_grouped["lon"],
+                lat=df_grouped["lat"],
+                mode="markers",
+                marker=go.scattermapbox.Marker(
+                    size=5, color=colors[cat], opacity=0.5
+                ),
+                text=hover_strings,
+                hovertemplate="%{text}<extra></extra>",
+                name=trace_names[cat],
             )
+        )
 
     scatter_map.update_layout(
         margin={"r": 0, "t": 35, "l": 0, "b": 0},
@@ -81,17 +79,16 @@ def create_barplot(df, colors):
         "between CHF 2000-2800",
         "above CHF 2800",
     ]
-    for cat in df_proc["Miete_Kategorie"].unique():
-        if cat in df_grouped.columns:
-            barplot.add_trace(
-                go.Bar(
-                    y=df_grouped["Kanton"],
-                    x=df_grouped.loc[:, cat],
-                    name=trace_names[cat],
-                    orientation="h",
-                    marker_color=colors[cat],
-                )
+    for cat in df["Miete_Kategorie"].unique():
+        barplot.add_trace(
+            go.Bar(
+                y=df_grouped["Kanton"],
+                x=df_grouped.loc[:, cat],
+                name=trace_names[cat],
+                orientation="h",
+                marker_color=colors[cat],
             )
+        )
 
     barplot.update_layout(
         barmode="stack",
