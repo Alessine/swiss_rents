@@ -39,18 +39,17 @@ def set_up_subplots():
 
 
 def add_scattermap_traces(df, go_figure, colors, traces):
-    hover_strings = [
-        f"Address: {street}, {place},<br>Rooms: {rooms}, Size: {round(size)}m²,<br>Rent: CHF {rent}"
-        for street, place, rooms, size, rent in zip(
-            df["Adresse"],
-            df["Ort"],
-            df["Zimmer"],
-            df["Fläche"],
-            df["Mietpreis_Brutto"],
-        )
-    ]
-
     for cat, df_grouped in df.groupby("Miete_Kategorie"):
+        hover_strings = [
+            f"Address: {street}, {place},<br>Rooms: {rooms}, Size: {round(size)}m²,<br>Rent: CHF {rent}"
+            for street, place, rooms, size, rent in zip(
+                df_grouped["Adresse"],
+                df_grouped["Ort"],
+                df_grouped["Zimmer"],
+                df_grouped["Fläche"],
+                df_grouped["Mietpreis_Brutto"],
+            )
+        ]
         go_figure.add_trace(
             go.Scattermapbox(
                 lon=df_grouped["lon"],
