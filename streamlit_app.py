@@ -108,7 +108,7 @@ def create_barplot(df, colors):
 
 # User dependent variables
 raw_data_path = "data/raw/georef-switzerland-kanton.geojson"
-proc_data_path = "data/processed/rents_with_coords_clean_2.csv"
+proc_data_path = "data/processed/rents_with_coords_clean.csv"
 
 
 # Secrets
