@@ -115,9 +115,9 @@ def add_barplot_traces(df, go_figure, colors, traces):
 def define_figure_layout(go_figure, mapbox_token):
     go_figure.update_layout(
         margin={"r": 0, "t": 0, "l": 0, "b": 0},
-        # autosize=True,
-        width=900,
-        height=1000,
+        autosize=True,
+        # width=900,
+        # height=1000,
         hovermode="closest",
         mapbox=dict(
             accesstoken=mapbox_token,
