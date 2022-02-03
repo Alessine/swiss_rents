@@ -31,9 +31,10 @@ def set_up_subplots():
         rows=2,
         cols=2,
         specs=[[{"colspan": 2, "type": "mapbox"}, None], [{}, {}]],
-        horizontal_spacing=0.07,
+        horizontal_spacing=0.17,
         vertical_spacing=0.07,
         subplot_titles=("First Subplot", "Second Subplot", "Third Subplot"),
+        column_widths=[2, 1],
     )
     return go_figure, colors, traces
 
@@ -62,6 +63,24 @@ def add_scattermap_traces(df, go_figure, colors, traces):
                 legendgroup=str(cat),
             ),
             row=1,
+            col=1,
+        )
+    return go_figure
+
+
+def add_scatter_traces(df, go_figure, colors, traces):
+    for cat, df_grouped in df.groupby("Miete_Kategorie"):
+        go_figure.add_trace(
+            go.Scatter(
+                x=df_grouped["Fläche"],
+                y=df_grouped["Mietpreis_Brutto"],
+                mode="markers",
+                marker={"color": colors[cat], "opacity": 0.6},
+                name=traces[cat],
+                legendgroup=str(cat),
+                showlegend=False,
+            ),
+            row=2,
             col=1,
         )
     return go_figure
@@ -97,7 +116,7 @@ def define_figure_layout(go_figure, mapbox_token):
     go_figure.update_layout(
         margin={"r": 0, "t": 0, "l": 0, "b": 0},
         # autosize=True,
-        width=750,
+        width=900,
         height=1000,
         hovermode="closest",
         mapbox=dict(
@@ -125,6 +144,9 @@ def build_combined_figure(df, mapbox_token):
         colors,
         traces,
     )
+
+    # Scatter plot
+    go_figure = add_scatter_traces(df, go_figure, colors, traces)
 
     # Bar plot
     go_figure = add_barplot_traces(df, go_figure, colors, traces)
