@@ -179,7 +179,7 @@ st.header("How Rents vary across the Country")
 # Form with Widgets
 st.sidebar.subheader("Selection Criteria")
 with st.sidebar.form("Search Criteria"):
-    max_rent = st.number_input("Max. Rent", value=0)
+    max_rent = st.number_input("Max. Rent", value=16500)
     num_rooms = st.number_input("Min. Number of Rooms", value=0)
     submitted = st.form_submit_button("Submit")
     if submitted:
