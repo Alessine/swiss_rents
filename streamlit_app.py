@@ -144,6 +144,16 @@ def add_barplot_traces(df, go_figure, colors, traces):
 
 
 def define_figure_layout(go_figure, mapbox_token):
+    # Subplot title font size
+    go_figure.layout.annotations[0].update(font_size=24, x=0.17, y=1.01)
+    go_figure.layout.annotations[1].update(font_size=24, x=0.17, y=0.455)
+    go_figure.layout.annotations[2].update(font_size=24, x=0.8, y=0.455)
+
+    # Axis Labels
+    go_figure.update_xaxes(title={"text": "Floor Space (m²)", "font_size": 16}, row=2, col=1)
+    go_figure.update_yaxes(title={"text": "Rent (CHF)", "font_size": 16}, row=2, col=1)
+    go_figure.update_xaxes(title={"text": "Number of Listings", "font_size": 16}, row=2, col=2)
+
     go_figure.update_layout(
         margin={"r": 0, "t": 45, "l": 0, "b": 0},
         width=875,
@@ -188,17 +198,6 @@ def build_combined_figure(df, mapbox_token):
 
     # Bar plot
     go_figure = add_barplot_traces(df, go_figure, colors, traces)
-
-    # Subplot title font size
-    go_figure.layout.annotations[0].update(font_size=24, x=0.17, y=1.01)
-    go_figure.layout.annotations[1].update(font_size=24, x=0.17, y=0.455)
-    go_figure.layout.annotations[2].update(font_size=24, x=0.8, y=0.455)
-
-    # Axis Labels
-    go_figure.update_xaxes(title={"text": "Floor Space (m²)", "font_size": 16}, row=2, col=1)
-    go_figure.update_yaxes(title={"text": "Rent (CHF)", "font_size": 16}, row=2, col=1)
-
-    go_figure.update_xaxes(title={"text": "Number of Listings", "font_size": 16}, row=2, col=2)
 
     # Layout
     go_figure = define_figure_layout(go_figure, mapbox_token)
