@@ -7,30 +7,20 @@
 #### -- Project Status: Active
 
 ## Project Intro/Objective
-The purpose of this project is ________. (Describe the main goals of the project. Limit to a short paragraph, 3-6 Sentences)
+The purpose of this project is to showcase how different factors influence the rents of apartments in Switzerland. Since almost 60% of residents in Switzerland live on rented properties, rather than owning a house, most people at one point face the question of whether their rent is within the normal range and how they might be able to find a more affordable space to live in. This app gives people the chance to explore a collection of apartment listings from 2019.
 
 ### Partner
-* [Name of Partner organization/Government department etc..]
-* Website for partner
-* Partner contact: [Name of Contact]
-* If you do not have a partner leave this section out
+* The dataset is publicly available: https://datenportal.info/wohnungsmarkt/wohnungsmieten/
+* Swisstopo REFRAME API: http://geodesy.geo.admin.ch/reframe/ to turn LV95 into GPS coordinates
 
 ### Methods Used
-* Inferential Statistics
-* Machine Learning
+* Data Pre-processing
+* APIs
 * Data Visualization
-* Predictive Modeling
-* etc.
 
 ### Technologies
-* R
-* Python
-* D3
-* PostGres, MySql
-* Pandas, jupyter
-* HTML
-* JavaScript
-* etc.
+* Python: Pandas, Requests, Plotly, Streamlit
+* IDEs: PyCharm, Jupyter
 
 ## Project Description
 (Provide more detailed overview of the project.
@@ -39,32 +29,6 @@ What specific data analysis/visualization and modelling work are you using to so
 problem? What blockers and challenges are you facing?
 Feel free to number or bullet point things here)
 
-## Getting Started
-
-1. Clone this repo (for help see this [tutorial](https://help.github.com/articles/cloning-a-repository/)).
-2. Raw Data is being kept [here](Repo folder containing raw data) within this repo.
-
-    *If using offline data mention that and how they may obtain the data from the froup)*
-
-3. Data processing/transformation scripts are being kept [here](Repo folder containing data processing scripts/notebooks)
-4. etc...
-
-*If your project is well underway and setup is fairly complicated (ie. requires installation of many packages)
-create another "setup.md" file and link to it here*
-
-5. Follow setup [instructions](Link to file)
-
-## Featured Notebooks/Analysis/Deliverables
-* [Notebook/Markdown/Slide Deck Title](link)
-* [Notebook/Markdown/Slide DeckTitle](link)
-* [Blog Post](link)
-
-
-## Contributing Members
-
-**Team Leads (Contacts) : [Full Name](https://github.com/[github handle])**
-
-#### Other Members:
-
- - [Full Name](https://github.com/[github handle])
- - [Full Name](https://github.com/[github handle])
+## Featured Notebooks/Scripts
+* [Notebook: Data pre-processing and Visualization](https://github.com/Alessine/swiss_rents/blob/master/notebooks/nb2_220202_advanced_viz.ipynb)
+* [Python Script: Streamlit App](https://github.com/Alessine/swiss_rents/blob/master/streamlit_app.py)
