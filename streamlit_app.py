@@ -34,7 +34,7 @@ def set_up_subplots():
         "below CHF 1200",
         "between CHF 1200-2000",
         "between CHF 2000-2800",
-        "above CHF 2800",
+        "over CHF 2800",
     ]
 
     go_figure = make_subplots(
@@ -136,7 +136,7 @@ def define_figure_layout(go_figure, mapbox_token):
             zoom=6.7,
             layers=[{"source": cantons, "type": "line", "line_width": 1}],
         ),
-        legend=dict(orientation="h", yanchor="top", y=0.54, xanchor="center", x=0.5, font_size=16),
+        legend=dict(orientation="h", yanchor="top", y=0.54, xanchor="center", x=0.5, font_size=16, itemsizing="constant"),
         template="simple_white",
         barmode="stack",
     )
@@ -209,12 +209,18 @@ with st.sidebar:
 
 # Form with Widgets
 with st.sidebar.form("Selection Criteria"):
+    place_sel = st.selectbox("Place", options=["All"] + list(df_plotting["Ort"].drop_duplicates().sort_values()))
     max_rent = st.number_input("Max. Rent", value=16500)
     num_rooms = st.number_input("Min. Number of Rooms", value=0)
     submitted = st.form_submit_button("Submit")
     if submitted:
-        df_plotting = df_plotting[(df_plotting["Mietpreis_Brutto"] <= max_rent) &
-                                  (df_plotting["Zimmer"] >= num_rooms)]
+        if place_sel == "All":
+            df_plotting = df_plotting[(df_plotting["Mietpreis_Brutto"] <= max_rent) &
+                                      (df_plotting["Zimmer"] >= num_rooms)].sort_values("Mietpreis_Brutto")
+        else:
+            df_plotting = df_plotting[(df_plotting["Ort"] == place_sel) &
+                                      (df_plotting["Mietpreis_Brutto"] <= max_rent) &
+                                      (df_plotting["Zimmer"] >= num_rooms)].sort_values("Mietpreis_Brutto")
 
 
 # Plotly Combined Plot
