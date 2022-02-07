@@ -145,7 +145,7 @@ def add_barplot_traces(df, go_figure, colors, traces):
 
 def define_figure_layout(go_figure, mapbox_token):
     # Subplot title font size
-    go_figure.layout.annotations[0].update(font_size=24, x=0.17, y=1.01)
+    go_figure.layout.annotations[0].update(font_size=24, x=0.175, y=1.01)
     go_figure.layout.annotations[1].update(font_size=24, x=0.17, y=0.455)
     go_figure.layout.annotations[2].update(font_size=24, x=0.8, y=0.455)
 
@@ -205,12 +205,37 @@ def build_combined_figure(df, mapbox_token):
     return go_figure
 
 
+@st.cache
+def convert_df(df):
+    # IMPORTANT: Cache the conversion to prevent computation on every rerun
+    return df.to_csv().encode('utf-8')
+
+
 # App layout
 st.set_page_config(layout="wide")
-st.text("")
-st.markdown("<h1 style='color: #7F3C8D; '>Apartment Listings in Switzerland (2019)</h1>", unsafe_allow_html=True)
-st.text("")
 
+st.markdown("<h1 style='color: #7F3C8D; '>Apartment Listings in Switzerland (2019)</h1>", unsafe_allow_html=True)
+
+st.subheader("Objective")
+st.markdown("""With this app you can explore a collection of Swiss apartment listings from 2019 and 
+find out how different factors influence the price at which apartments are available for rent.""")
+
+st.markdown("---")
+st.subheader("Analysis")
+st.markdown("""For the purpose of this analysis the listings were categorized based on their rent per square 
+meter of floor space. Taking specific percentiles, this resulted in these four groups of apartments:
+* cheapest: 15% of all listings with the lowest rental price per square meter of floor space
+* below average: 35% of apartments below the average price/m² but not within the lowest 15%
+* above average: 35% of apartments above the average price/m² but not within the top 15%
+* most expensive: 15% with the highest rental price per square meter of floor space
+In the plots below you can see (A) how these apartments are distributed geographically, 
+(B) how their floor space is related to their rent and (C) what cantons have the highest number of listings and in what 
+categories these apartments fall.
+
+Finally, you can use the Selection Criteria on the left to explore more in detail which places on the map offer 
+what types of apartments or you can filter listings based on maximum rent or minimum number of rooms. 
+""")
+st.text("")
 
 # User dependent variables
 raw_data_path = "data/raw/georef-switzerland-kanton.geojson"
@@ -231,14 +256,14 @@ df_plotting = deepcopy(df_proc)
 lottie_url = "https://assets10.lottiefiles.com/packages/lf20_7ttkwwdk.json"  # purple
 lottie_pin = load_lottieurl(lottie_url)
 with st.sidebar:
-    st_lottie(lottie_pin, speed=1, height=120)
+    st_lottie(lottie_pin, speed=1, height=100)
     st.markdown("<h1 style='text-align: center; '>Selection Criteria</h1>", unsafe_allow_html=True)
 
 # Form with Widgets
 with st.sidebar.form("Selection Criteria"):
     place_sel = st.selectbox("Place", options=["All"] + list(df_plotting["Ort"].drop_duplicates().sort_values()))
-    max_rent = st.number_input("Max. Rent", value=16500)
-    num_rooms = st.number_input("Min. Number of Rooms", value=0)
+    max_rent = st.number_input("Max. Rent (CHF / month)", value=16500)
+    num_rooms = st.number_input("Min. Number of Rooms", value=1)
     submitted = st.form_submit_button("Submit")
     if submitted:
         if place_sel == "All":
@@ -255,11 +280,21 @@ joint_fig = build_combined_figure(df=df_plotting, mapbox_token=mapbox_access_tok
 st.plotly_chart(joint_fig)
 st.text("")
 
+st.markdown("---")
+st.subheader("Data Source")
 # Show the data itself
-if st.checkbox("Show Data"):
+if st.checkbox("Show Processed Data"):
     st.dataframe(data=df_proc)
 
-st.write("The data is freely available at: https://datenportal.info/wohnungsmarkt/wohnungsmieten/")
+# Download button and link for data
+csv = convert_df(df_proc)
+st.download_button(
+     label="Download Processed Data (csv)",
+     data=csv,
+     file_name='swiss_rents_df.csv',
+     mime='text/csv',
+ )
+st.write("The unprocessed data is freely available at: https://datenportal.info/wohnungsmarkt/wohnungsmieten/")
 
 st.markdown("---")
 st.markdown("<b>A Streamlit web app by Angela Niederberger.</b>", unsafe_allow_html=True)
