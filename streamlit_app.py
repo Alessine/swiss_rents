@@ -1,13 +1,23 @@
 import streamlit as st
+from streamlit_lottie import st_lottie
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
 import json
+import requests
 from copy import deepcopy
 
 
 # Functions
+@st.cache
+def load_lottieurl(url: str):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
+
+
 @st.cache
 def load_data(raw_data, proc_data):
     df = pd.read_csv(proc_data)
@@ -31,9 +41,9 @@ def set_up_subplots():
         rows=2,
         cols=2,
         specs=[[{"colspan": 2, "type": "mapbox"}, None], [{}, {}]],
-        horizontal_spacing=0.17,
-        vertical_spacing=0.07,
-        subplot_titles=("First Subplot", "Second Subplot", "Third Subplot"),
+        horizontal_spacing=0.2,
+        vertical_spacing=0.11,
+        subplot_titles=("<b>Location of Listed Apartments</b>", "<b>Apartments by Size and Rent</b>", "<b>Apartments per Canton</b>"),
         column_widths=[2, 1],
     )
     return go_figure, colors, traces
@@ -114,10 +124,9 @@ def add_barplot_traces(df, go_figure, colors, traces):
 
 def define_figure_layout(go_figure, mapbox_token):
     go_figure.update_layout(
-        margin={"r": 0, "t": 0, "l": 0, "b": 0},
-        autosize=True,
-        # width=900,
-        # height=1000,
+        margin={"r": 0, "t": 35, "l": 0, "b": 0},
+        width=875,
+        height=1100,
         hovermode="closest",
         mapbox=dict(
             accesstoken=mapbox_token,
@@ -127,7 +136,7 @@ def define_figure_layout(go_figure, mapbox_token):
             zoom=6.7,
             layers=[{"source": cantons, "type": "line", "line_width": 1}],
         ),
-        legend=dict(orientation="h", yanchor="top", y=0.53, xanchor="center", x=0.5),
+        legend=dict(orientation="h", yanchor="top", y=0.54, xanchor="center", x=0.5, font_size=16),
         template="simple_white",
         barmode="stack",
     )
@@ -151,10 +160,28 @@ def build_combined_figure(df, mapbox_token):
     # Bar plot
     go_figure = add_barplot_traces(df, go_figure, colors, traces)
 
+    # Subplot title font size
+    go_figure.layout.annotations[0].update(font_size=24, x=0.17, y=1.01)
+    go_figure.layout.annotations[1].update(font_size=24, x=0.17, y=0.455)
+    go_figure.layout.annotations[2].update(font_size=24, x=0.8, y=0.455)
+
+    # Axis Labels
+    go_figure.update_xaxes(title={"text": "Floor Space (m²)", "font_size": 16}, row=2, col=1)
+    go_figure.update_yaxes(title={"text": "Rent (CHF)", "font_size": 16}, row=2, col=1)
+
+    go_figure.update_xaxes(title={"text": "Number of Listings", "font_size": 16}, row=2, col=2)
+
     # Layout
     go_figure = define_figure_layout(go_figure, mapbox_token)
 
     return go_figure
+
+
+# App layout
+st.set_page_config(layout="wide")
+st.text("")
+st.markdown("<h1 style='color: #7F3C8D; '>Apartment Listings in Switzerland (2019)</h1>", unsafe_allow_html=True)
+st.text("")
 
 
 # User dependent variables
@@ -171,14 +198,17 @@ df_proc, cantons = load_data(raw_data_path, proc_data_path)
 df_plotting = deepcopy(df_proc)
 
 
-# App layout
-st.title("Apartment Listings in Switzerland (2019)")
-st.header("How Rents vary across the Country")
-
+# Sidebar
+# Lottie icon
+lottie_url = "https://assets10.lottiefiles.com/packages/lf20_7ttkwwdk.json"  # purple
+    #"https://assets3.lottiefiles.com/packages/lf20_jv7vx37y.json"  # blue
+lottie_pin = load_lottieurl(lottie_url)
+with st.sidebar:
+    st_lottie(lottie_pin, speed=1, height=120)
+    st.markdown("<h1 style='text-align: center; '>Selection Criteria</h1>", unsafe_allow_html=True)
 
 # Form with Widgets
-st.sidebar.subheader("Selection Criteria")
-with st.sidebar.form("Search Criteria"):
+with st.sidebar.form("Selection Criteria"):
     max_rent = st.number_input("Max. Rent", value=16500)
     num_rooms = st.number_input("Min. Number of Rooms", value=0)
     submitted = st.form_submit_button("Submit")
@@ -190,7 +220,7 @@ with st.sidebar.form("Search Criteria"):
 # Plotly Combined Plot
 joint_fig = build_combined_figure(df=df_plotting, mapbox_token=mapbox_access_token)
 st.plotly_chart(joint_fig)
-
+st.text("")
 
 # Show the data itself
 if st.checkbox("Show Data"):

@@ -5,6 +5,7 @@ pandas
 seaborn
 requests
 streamlit
+streamlit-lottie
 nbformat
 plotly
 scikit-learn
