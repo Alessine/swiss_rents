@@ -21,6 +21,7 @@ def load_lottieurl(url: str):
 @st.cache
 def load_data(raw_data, proc_data):
     df = pd.read_csv(proc_data)
+    df.sort_values("Miete_Kategorie", inplace=True)
     with open(raw_data) as response:
         geojson = json.load(response)
 
@@ -31,10 +32,10 @@ def set_up_subplots():
     colors = px.colors.qualitative.Bold
 
     traces = [
-        "below CHF 1200",
-        "between CHF 1200-2000",
-        "between CHF 2000-2800",
-        "over CHF 2800",
+        "cheapest",
+        "below average",
+        "above average",
+        "most expensive",
     ]
 
     go_figure = make_subplots(
@@ -43,7 +44,9 @@ def set_up_subplots():
         specs=[[{"colspan": 2, "type": "mapbox"}, None], [{}, {}]],
         horizontal_spacing=0.2,
         vertical_spacing=0.11,
-        subplot_titles=("<b>Location of Listed Apartments</b>", "<b>Apartments by Size and Rent</b>", "<b>Apartments per Canton</b>"),
+        subplot_titles=("<b>Location of Listed Apartments</b>",
+                        "<b>Apartments by Size and Rent</b>",
+                        "<b>Apartments per Canton</b>"),
         column_widths=[2, 1],
     )
     return go_figure, colors, traces
@@ -66,7 +69,7 @@ def add_scattermap_traces(df, go_figure, colors, traces):
                 lon=df_grouped["lon"],
                 lat=df_grouped["lat"],
                 mode="markers",
-                marker=go.scattermapbox.Marker(size=5, color=colors[cat], opacity=0.6),
+                marker=go.scattermapbox.Marker(size=5, color=colors[cat], opacity=0.5),
                 text=hover_strings,
                 hovertemplate="%{text}<extra></extra>",
                 name=traces[cat],
@@ -85,7 +88,7 @@ def add_scatter_traces(df, go_figure, colors, traces):
                 x=df_grouped["Fläche"],
                 y=df_grouped["Mietpreis_Brutto"],
                 mode="markers",
-                marker={"color": colors[cat], "opacity": 0.6},
+                marker={"color": colors[cat], "opacity": 0.5},
                 name=traces[cat],
                 legendgroup=str(cat),
                 showlegend=False,
@@ -136,7 +139,8 @@ def define_figure_layout(go_figure, mapbox_token):
             zoom=6.7,
             layers=[{"source": cantons, "type": "line", "line_width": 1}],
         ),
-        legend=dict(orientation="h", yanchor="top", y=0.54, xanchor="center", x=0.5, font_size=16, itemsizing="constant"),
+        legend=dict(orientation="h", yanchor="top", y=0.54, xanchor="center", x=0.5,
+                    font_size=16, itemsizing="constant"),
         template="simple_white",
         barmode="stack",
     )
@@ -201,7 +205,6 @@ df_plotting = deepcopy(df_proc)
 # Sidebar
 # Lottie icon
 lottie_url = "https://assets10.lottiefiles.com/packages/lf20_7ttkwwdk.json"  # purple
-    #"https://assets3.lottiefiles.com/packages/lf20_jv7vx37y.json"  # blue
 lottie_pin = load_lottieurl(lottie_url)
 with st.sidebar:
     st_lottie(lottie_pin, speed=1, height=120)
@@ -216,11 +219,11 @@ with st.sidebar.form("Selection Criteria"):
     if submitted:
         if place_sel == "All":
             df_plotting = df_plotting[(df_plotting["Mietpreis_Brutto"] <= max_rent) &
-                                      (df_plotting["Zimmer"] >= num_rooms)].sort_values("Mietpreis_Brutto")
+                                      (df_plotting["Zimmer"] >= num_rooms)]
         else:
             df_plotting = df_plotting[(df_plotting["Ort"] == place_sel) &
                                       (df_plotting["Mietpreis_Brutto"] <= max_rent) &
-                                      (df_plotting["Zimmer"] >= num_rooms)].sort_values("Mietpreis_Brutto")
+                                      (df_plotting["Zimmer"] >= num_rooms)]
 
 
 # Plotly Combined Plot
@@ -233,3 +236,10 @@ if st.checkbox("Show Data"):
     st.dataframe(data=df_proc)
 
 st.write("The data is freely available at: https://datenportal.info/wohnungsmarkt/wohnungsmieten/")
+
+st.markdown("---")
+st.markdown("<b>A Streamlit web app by Angela Niederberger.</b>", unsafe_allow_html=True)
+st.markdown("""I love getting feedback! 
+The code for this app is available on [GitHub](https://github.com/Alessine/swiss_rents). 
+You can reach me on [LinkedIn](www.linkedin.com/in/angela-niederberger) 
+or [Twitter](https://twitter.com/angie_k_n).""")
