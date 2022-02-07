@@ -21,7 +21,6 @@ def load_lottieurl(url: str):
 @st.cache
 def load_data(raw_data, proc_data):
     df = pd.read_csv(proc_data)
-    df.sort_values("Miete_Kategorie", inplace=True)
     with open(raw_data) as response:
         geojson = json.load(response)
 
@@ -83,12 +82,21 @@ def add_scattermap_traces(df, go_figure, colors, traces):
 
 def add_scatter_traces(df, go_figure, colors, traces):
     for cat, df_grouped in df.groupby("Miete_Kategorie"):
+        hover_strings = [
+            f"Floor Space: {size}m²,<br>Rent: CHF {rent}"
+            for size, rent in zip(
+                df_grouped["Fläche"],
+                df_grouped["Mietpreis_Brutto"],
+            )
+        ]
         go_figure.add_trace(
             go.Scatter(
                 x=df_grouped["Fläche"],
                 y=df_grouped["Mietpreis_Brutto"],
                 mode="markers",
                 marker={"color": colors[cat], "opacity": 0.5},
+                text=hover_strings,
+                hovertemplate="%{text}<extra></extra>",
                 name=traces[cat],
                 legendgroup=str(cat),
                 showlegend=False,
@@ -108,14 +116,24 @@ def add_barplot_traces(df, go_figure, colors, traces):
         .sort_values("Kanton", ascending=False)
         .reset_index()
     )
+    df_grouped["Total_Kanton"] = df_grouped.iloc[:, 2:].sum(axis=1)
+
     for cat in df["Miete_Kategorie"].unique():
+        hover_strings = [
+            f"{round(num_per_canton / total_canton * 100, 2)}%"
+            for num_per_canton, total_canton in zip(
+                df_grouped.loc[:, cat], df_grouped["Total_Kanton"]
+            )
+        ]
         go_figure.add_trace(
             go.Bar(
                 y=df_grouped["Kanton"],
                 x=df_grouped.loc[:, cat],
-                name=traces[cat],
                 orientation="h",
                 marker_color=colors[cat],
+                text=hover_strings,
+                hovertemplate="%{text}<extra></extra>",
+                name=traces[cat],
                 legendgroup=str(cat),
                 showlegend=False,
             ),
@@ -127,7 +145,7 @@ def add_barplot_traces(df, go_figure, colors, traces):
 
 def define_figure_layout(go_figure, mapbox_token):
     go_figure.update_layout(
-        margin={"r": 0, "t": 35, "l": 0, "b": 0},
+        margin={"r": 0, "t": 45, "l": 0, "b": 0},
         width=875,
         height=1100,
         hovermode="closest",
@@ -139,8 +157,15 @@ def define_figure_layout(go_figure, mapbox_token):
             zoom=6.7,
             layers=[{"source": cantons, "type": "line", "line_width": 1}],
         ),
-        legend=dict(orientation="h", yanchor="top", y=0.54, xanchor="center", x=0.5,
-                    font_size=16, itemsizing="constant"),
+        legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=0.54,
+            xanchor="center",
+            x=0.5,
+            font_size=16,
+            itemsizing="constant",
+        ),
         template="simple_white",
         barmode="stack",
     )
