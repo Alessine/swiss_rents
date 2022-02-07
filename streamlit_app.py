@@ -266,5 +266,5 @@ st.markdown("---")
 st.markdown("<b>A Streamlit web app by Angela Niederberger.</b>", unsafe_allow_html=True)
 st.markdown("""I love getting feedback! 
 The code for this app is available on [GitHub](https://github.com/Alessine/swiss_rents). 
-You can reach me on [LinkedIn](www.linkedin.com/in/angela-niederberger) 
+You can reach me on [LinkedIn](https://www.linkedin.com/in/angela-niederberger) 
 or [Twitter](https://twitter.com/angie_k_n).""")
