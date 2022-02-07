@@ -10,9 +10,9 @@ The purpose of this project is to showcase how different factors influence the r
 
 ### Partner
 * The dataset is publicly available: https://datenportal.info/wohnungsmarkt/wohnungsmieten/
-* Swisstopo REFRAME API: http://geodesy.geo.admin.ch/reframe/ to turn LV95 into GPS coordinates
+* Swisstopo REFRAME API: https://geodesy.geo.admin.ch/reframe/ to turn LV95 into GPS coordinates
 
-### Methods Used
+### Project Components
 * Data Pre-processing
 * APIs
 * Data Visualization
