@@ -20,6 +20,7 @@ The purpose of this project is to showcase how different factors influence the r
 ### Technologies
 * Python: Pandas, Requests, Plotly, Streamlit
 * IDEs: PyCharm, Jupyter
+* Deployment: Streamlit Cloud
 
 ## Project Description
 (Provide more detailed overview of the project.
