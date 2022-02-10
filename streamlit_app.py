@@ -53,23 +53,13 @@ def set_up_subplots():
 
 def add_scattermap_traces(df, go_figure, colors, traces):
     for cat, df_grouped in df.groupby("Miete_Kategorie"):
-        hover_strings = [
-            f"Address: {street}, {place},<br>Rooms: {rooms}, Size: {round(size)}m²,<br>Rent: CHF {rent}"
-            for street, place, rooms, size, rent in zip(
-                df_grouped["Adresse"],
-                df_grouped["Ort"],
-                df_grouped["Zimmer"],
-                df_grouped["Fläche"],
-                df_grouped["Mietpreis_Brutto"],
-            )
-        ]
         go_figure.add_trace(
             go.Scattermapbox(
                 lon=df_grouped["lon"],
                 lat=df_grouped["lat"],
                 mode="markers",
                 marker=go.scattermapbox.Marker(size=5, color=colors[cat], opacity=0.5),
-                text=hover_strings,
+                text=df_grouped["hover_strings_scatter"],
                 hovertemplate="%{text}<extra></extra>",
                 name=traces[cat],
                 legendgroup=str(cat),
@@ -82,20 +72,13 @@ def add_scattermap_traces(df, go_figure, colors, traces):
 
 def add_scatter_traces(df, go_figure, colors, traces):
     for cat, df_grouped in df.groupby("Miete_Kategorie"):
-        hover_strings = [
-            f"Floor Space: {size}m²,<br>Rent: CHF {rent}"
-            for size, rent in zip(
-                df_grouped["Fläche"],
-                df_grouped["Mietpreis_Brutto"],
-            )
-        ]
         go_figure.add_trace(
             go.Scatter(
                 x=df_grouped["Fläche"],
                 y=df_grouped["Mietpreis_Brutto"],
                 mode="markers",
                 marker={"color": colors[cat], "opacity": 0.5},
-                text=hover_strings,
+                text=df_grouped["hover_strings_scatter"],
                 hovertemplate="%{text}<extra></extra>",
                 name=traces[cat],
                 legendgroup=str(cat),
@@ -110,11 +93,11 @@ def add_scatter_traces(df, go_figure, colors, traces):
 def add_barplot_traces(df, go_figure, colors, traces):
     df_grouped = (
         df.groupby(["Kanton", "Miete_Kategorie"])
-        .size()
-        .unstack(level=-1)
-        .fillna(0)
-        .sort_values("Kanton", ascending=False)
-        .reset_index()
+            .size()
+            .unstack(level=-1)
+            .fillna(0)
+            .sort_values("Kanton", ascending=False)
+            .reset_index()
     )
     df_grouped["Total_Kanton"] = df_grouped.iloc[:, 2:].sum(axis=1)
 
@@ -185,6 +168,9 @@ def define_figure_layout(go_figure, mapbox_token):
 def build_combined_figure(df, mapbox_token):
     go_figure, colors, traces = set_up_subplots()
 
+    # Layout
+    go_figure = define_figure_layout(go_figure, mapbox_token)
+
     # Scattermapbox
     go_figure = add_scattermap_traces(
         df,
@@ -199,9 +185,6 @@ def build_combined_figure(df, mapbox_token):
     # Bar plot
     go_figure = add_barplot_traces(df, go_figure, colors, traces)
 
-    # Layout
-    go_figure = define_figure_layout(go_figure, mapbox_token)
-
     return go_figure
 
 
@@ -214,42 +197,55 @@ def convert_df(df):
 # App layout
 st.set_page_config(layout="wide")
 
-st.markdown("<h1 style='color: #7F3C8D; '>Apartment Listings in Switzerland (2019)</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='color: #7F3C8D'>Apartment Listings in Switzerland (2019)</h1>", unsafe_allow_html=True)
 
 st.subheader("Objective")
 st.markdown("""With this app you can explore a collection of Swiss apartment listings from 2019 and 
-find out how different factors influence the price at which apartments are available for rent.""")
+find out how different factors influence their rent.""")
 
 st.markdown("---")
 st.subheader("Analysis")
-st.markdown("""For the purpose of this analysis the listings were categorized based on their rent per square 
-meter of floor space. Taking specific percentiles, this resulted in these four groups of apartments:
-* cheapest: 15% of all listings with the lowest rental price per square meter of floor space
-* below average: 35% of apartments below the average price/m² but not within the lowest 15%
-* above average: 35% of apartments above the average price/m² but not within the top 15%
-* most expensive: 15% with the highest rental price per square meter of floor space
-In the plots below you can see (A) how these apartments are distributed geographically, 
-(B) how their floor space is related to their rent and (C) what cantons have the highest number of listings and in what 
-categories these apartments fall.
+
+left_col, right_col = st.columns([3, 1])
+left_col.markdown("""The listings were categorized based on their rent per square meter of floor space. 
+You can calculate this indicator for your own apartment and see in what category you fall.
+
+The following categories seemed to give interesting insights:
+* `< CHF 15.70/m²` — the cheapest 15% of all listings (lowest rent per square meter)
+* `≥ CHF 15.70 but < CHF 19.70/m²` — 35% of apartments below the average, but not within the cheapest 15%
+* `≥ CHF 19.70 but < CHF 26.10/m²` — 35% of apartments above the average, but not within the top 15%
+* `≥ CHF 26.10/m²` — the most expensive 15% of all listings (highest rent per square meter)
+
+In the plots below you can see **(A)** how these apartments are distributed geographically, 
+**(B)** how their floor space is related to their rent and **(C)** what cantons have most listings and in what 
+categories they fall.
 
 Finally, you can use the Selection Criteria on the left to explore more in detail which places on the map offer 
 what types of apartments or you can filter listings based on maximum rent or minimum number of rooms. 
 """)
+
+with right_col.form("Rent/m²", clear_on_submit=True):
+    user_rent = st.number_input("Rent (CHF)", 0)
+    user_floor_space = st.number_input("Floor Space (m²)", 0)
+    submitted = st.form_submit_button("Calculate")
+    if submitted:
+        if user_floor_space == 0:
+            st.write("Please enter floor space")
+        else:
+            st.write(f"Rent/m²: {user_rent / user_floor_space}")
+
 st.text("")
 
 # User dependent variables
 raw_data_path = "data/raw/georef-switzerland-kanton.geojson"
 proc_data_path = "data/processed/rents_with_coords_clean.csv"
 
-
 # Secrets
 mapbox_access_token = st.secrets["MAPBOX_ACCESS_TOKEN"]
-
 
 # Load the data
 df_proc, cantons = load_data(raw_data_path, proc_data_path)
 df_plotting = deepcopy(df_proc)
-
 
 # Sidebar
 # Lottie icon
@@ -274,7 +270,6 @@ with st.sidebar.form("Selection Criteria"):
                                       (df_plotting["Mietpreis_Brutto"] <= max_rent) &
                                       (df_plotting["Zimmer"] >= num_rooms)]
 
-
 # Plotly Combined Plot
 joint_fig = build_combined_figure(df=df_plotting, mapbox_token=mapbox_access_token)
 st.plotly_chart(joint_fig)
@@ -289,16 +284,16 @@ if st.checkbox("Show Processed Data"):
 # Download button and link for data
 csv = convert_df(df_proc)
 st.download_button(
-     label="Download Processed Data (csv)",
-     data=csv,
-     file_name='swiss_rents_df.csv',
-     mime='text/csv',
- )
+    label="Download Processed Data (csv)",
+    data=csv,
+    file_name='swiss_rents_df.csv',
+    mime='text/csv',
+)
 st.write("The unprocessed data is freely available at: https://datenportal.info/wohnungsmarkt/wohnungsmieten/")
 
 st.markdown("---")
 st.markdown("<b>A Streamlit web app by Angela Niederberger.</b>", unsafe_allow_html=True)
 st.markdown("""I love getting feedback! 
 The code for this app is available on [GitHub](https://github.com/Alessine/swiss_rents). 
-You can reach me on [LinkedIn](https://www.linkedin.com/in/angela-niederberger) 
+You can reach out to me on [LinkedIn](https://www.linkedin.com/in/angela-niederberger) 
 or [Twitter](https://twitter.com/angie_k_n).""")
