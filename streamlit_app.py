@@ -99,7 +99,7 @@ def add_barplot_traces(df, go_figure, colors, traces):
             .sort_values("Kanton", ascending=False)
             .reset_index()
     )
-    df_grouped["Total_Kanton"] = df_grouped.iloc[:, 2:].sum(axis=1)
+    df_grouped["Total_Kanton"] = df_grouped.iloc[:, 1:].sum(axis=1)
 
     for cat in df["Miete_Kategorie"].unique():
         hover_strings = [
