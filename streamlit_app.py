@@ -270,16 +270,22 @@ with st.sidebar.form("Selection Criteria"):
                                       (df_plotting["Mietpreis_Brutto"] <= max_rent) &
                                       (df_plotting["Zimmer"] >= num_rooms)]
 
-# Plotly Combined Plot
-joint_fig = build_combined_figure(df=df_plotting, mapbox_token=mapbox_access_token)
-st.plotly_chart(joint_fig)
+try:
+    assert len(df_plotting.index) > 0, "Dataframe is empty."
+    # Plotly Combined Plot
+    joint_fig = build_combined_figure(df=df_plotting, mapbox_token=mapbox_access_token)
+    st.plotly_chart(joint_fig)
+except AssertionError:
+    st.sidebar.write("There are no apartment listings that meet these criteria.")
+    df_plotting = deepcopy(df_proc)
+
 st.text("")
 
 st.markdown("---")
 st.subheader("Data Source")
 # Show the data itself
-if st.checkbox("Show Processed Data"):
-    st.dataframe(data=df_proc)
+if st.checkbox("Show Processed Data (first 10 rows)"):
+    st.dataframe(data=df_proc.head(10))
 
 # Download button and link for data
 csv = convert_df(df_proc)
