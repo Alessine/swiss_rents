@@ -126,7 +126,7 @@ def add_barplot_traces(df, go_figure, colors, traces):
     return go_figure
 
 
-def define_figure_layout(go_figure, mapbox_token):
+def define_figure_layout(go_figure, mapbox_token, geojson):
     # Subplot title font size
     go_figure.layout.annotations[0].update(font_size=24, x=0.175, y=1.01)
     go_figure.layout.annotations[1].update(font_size=24, x=0.17, y=0.455)
@@ -148,7 +148,7 @@ def define_figure_layout(go_figure, mapbox_token):
             center=go.layout.mapbox.Center(lat=46.8, lon=8.3),
             pitch=0,
             zoom=6.7,
-            layers=[{"source": cantons, "type": "line", "line_width": 1}],
+            layers=[{"source": geojson, "type": "line", "line_width": 1}],
         ),
         legend=dict(
             orientation="h",
@@ -165,11 +165,11 @@ def define_figure_layout(go_figure, mapbox_token):
     return go_figure
 
 
-def build_combined_figure(df, mapbox_token):
+def build_combined_figure(df, mapbox_token, geojson):
     go_figure, colors, traces = set_up_subplots()
 
     # Layout
-    go_figure = define_figure_layout(go_figure, mapbox_token)
+    go_figure = define_figure_layout(go_figure, mapbox_token, geojson)
 
     # Scattermapbox
     go_figure = add_scattermap_traces(
@@ -190,7 +190,6 @@ def build_combined_figure(df, mapbox_token):
 
 @st.cache
 def convert_df(df):
-    # IMPORTANT: Cache the conversion to prevent computation on every rerun
     return df.to_csv().encode('utf-8')
 
 
@@ -257,12 +256,14 @@ with st.sidebar:
 
 # Form with Widgets
 with st.sidebar.form("Selection Criteria"):
-    place_sel = st.selectbox("Place", options=["All"] + list(df_plotting["Ort"].drop_duplicates().sort_values()))
+    place_sel = st.text_input(label="Place", value="All")
     max_rent = st.number_input("Max. Rent (CHF / month)", value=16500)
     num_rooms = st.number_input("Min. Number of Rooms", value=1)
     submitted = st.form_submit_button("Submit")
     if submitted:
-        if place_sel == "All":
+        if place_sel not in list(df_plotting["Ort"].drop_duplicates()):
+            st.write(f"Sorry, there are no apartment listings in {place_sel}.")
+        elif place_sel == "All":
             df_plotting = df_plotting[(df_plotting["Mietpreis_Brutto"] <= max_rent) &
                                       (df_plotting["Zimmer"] >= num_rooms)]
         else:
@@ -273,7 +274,7 @@ with st.sidebar.form("Selection Criteria"):
 try:
     assert len(df_plotting.index) > 0, "Dataframe is empty."
     # Plotly Combined Plot
-    joint_fig = build_combined_figure(df=df_plotting, mapbox_token=mapbox_access_token)
+    joint_fig = build_combined_figure(df=df_plotting, mapbox_token=mapbox_access_token, geojson=cantons)
     st.plotly_chart(joint_fig)
 except AssertionError:
     st.sidebar.write("There are no apartment listings that meet these criteria.")
