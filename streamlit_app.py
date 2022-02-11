@@ -261,11 +261,13 @@ with st.sidebar.form("Selection Criteria"):
     num_rooms = st.number_input("Min. Number of Rooms", value=1)
     submitted = st.form_submit_button("Submit")
     if submitted:
-        if place_sel not in list(df_plotting["Ort"].drop_duplicates()):
-            st.write(f"Sorry, there are no apartment listings in {place_sel}.")
-        elif place_sel == "All":
+        if place_sel == "All":
             df_plotting = df_plotting[(df_plotting["Mietpreis_Brutto"] <= max_rent) &
                                       (df_plotting["Zimmer"] >= num_rooms)]
+
+        elif place_sel not in list(df_plotting["Ort"].drop_duplicates()):
+            st.write(f"Sorry, there are no apartment listings in {place_sel}.")
+
         else:
             df_plotting = df_plotting[(df_plotting["Ort"] == place_sel) &
                                       (df_plotting["Mietpreis_Brutto"] <= max_rent) &
