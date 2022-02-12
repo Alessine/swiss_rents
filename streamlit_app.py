@@ -41,7 +41,7 @@ def set_up_subplots():
         rows=2,
         cols=2,
         specs=[[{"colspan": 2, "type": "mapbox"}, None], [{}, {}]],
-        horizontal_spacing=0.2,
+        horizontal_spacing=0.15,
         vertical_spacing=0.11,
         subplot_titles=("<b>Location of Listed Apartments</b>",
                         "<b>Apartments by Size and Rent</b>",
@@ -138,9 +138,8 @@ def define_figure_layout(go_figure, mapbox_token, geojson):
     go_figure.update_xaxes(title={"text": "Number of Listings", "font_size": 16}, row=2, col=2)
 
     go_figure.update_layout(
-        margin={"r": 0, "t": 45, "l": 0, "b": 0},
-        width=875,
-        height=1100,
+        margin={"r": 30, "t": 50, "l": 65, "b": 65},
+        height=1200,
         hovermode="closest",
         mapbox=dict(
             accesstoken=mapbox_token,
@@ -266,7 +265,7 @@ with st.sidebar.form("Selection Criteria"):
                                       (df_plotting["Zimmer"] >= num_rooms)]
 
         elif place_sel not in list(df_plotting["Ort"].drop_duplicates()):
-            st.write(f"Sorry, there are no apartment listings in {place_sel}.")
+            st.write(f"There are no apartment listings in {place_sel}.")
 
         else:
             df_plotting = df_plotting[(df_plotting["Ort"] == place_sel) &
@@ -277,7 +276,7 @@ try:
     assert len(df_plotting.index) > 0, "Dataframe is empty."
     # Plotly Combined Plot
     joint_fig = build_combined_figure(df=df_plotting, mapbox_token=mapbox_access_token, geojson=cantons)
-    st.plotly_chart(joint_fig)
+    st.plotly_chart(joint_fig, use_container_width=True)
 except AssertionError:
     st.sidebar.write("There are no apartment listings that meet these criteria.")
     df_plotting = deepcopy(df_proc)
