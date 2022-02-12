@@ -28,15 +28,6 @@ def load_data(raw_data, proc_data):
 
 
 def set_up_figure(mapbox_token, geojson):
-    colors = px.colors.qualitative.Bold
-
-    trace_names = [
-        "cheapest",
-        "below average",
-        "above average",
-        "most expensive",
-    ]
-
     go_figure = make_subplots(
         rows=2,
         cols=2,
@@ -84,12 +75,13 @@ def set_up_figure(mapbox_token, geojson):
         barmode="stack",
     )
 
-    return go_figure, colors, trace_names
+    return go_figure
 
 
-def add_scattermap_traces(df, go_figure, colors, trace_names):
+def list_scattermap_traces(df, colors, trace_names):
+    scattermap_trace_list = []
     for cat, df_grouped in df.groupby("Miete_Kategorie"):
-        go_figure.add_trace(
+        scattermap_trace_list.append(
             go.Scattermapbox(
                 lon=df_grouped["lon"],
                 lat=df_grouped["lat"],
@@ -99,16 +91,15 @@ def add_scattermap_traces(df, go_figure, colors, trace_names):
                 hovertemplate="%{text}<extra></extra>",
                 name=trace_names[cat],
                 legendgroup=str(cat),
-            ),
-            row=1,
-            col=1,
+            )
         )
-    return go_figure
+    return scattermap_trace_list
 
 
-def add_scatter_traces(df, go_figure, colors, trace_names):
+def list_scatter_traces(df, colors, trace_names):
+    scatter_trace_list = []
     for cat, df_grouped in df.groupby("Miete_Kategorie"):
-        go_figure.add_trace(
+        scatter_trace_list.append(
             go.Scatter(
                 x=df_grouped["Fläche"],
                 y=df_grouped["Mietpreis_Brutto"],
@@ -119,14 +110,12 @@ def add_scatter_traces(df, go_figure, colors, trace_names):
                 name=trace_names[cat],
                 legendgroup=str(cat),
                 showlegend=False,
-            ),
-            row=2,
-            col=1,
+            )
         )
-    return go_figure
+    return scatter_trace_list
 
 
-def add_barplot_traces(df, go_figure, colors, trace_names):
+def list_barplot_traces(df, colors, trace_names):
     df_grouped = (
         df.groupby(["Kanton", "Miete_Kategorie"])
             .size()
@@ -136,6 +125,7 @@ def add_barplot_traces(df, go_figure, colors, trace_names):
             .reset_index()
     )
     df_grouped["Total_Kanton"] = df_grouped.iloc[:, 1:].sum(axis=1)
+    barplot_trace_list = []
 
     for cat in df["Miete_Kategorie"].unique():
         hover_strings = [
@@ -144,7 +134,7 @@ def add_barplot_traces(df, go_figure, colors, trace_names):
                 df_grouped.loc[:, cat], df_grouped["Total_Kanton"]
             )
         ]
-        go_figure.add_trace(
+        barplot_trace_list.append(
             go.Bar(
                 y=df_grouped["Kanton"],
                 x=df_grouped.loc[:, cat],
@@ -155,29 +145,31 @@ def add_barplot_traces(df, go_figure, colors, trace_names):
                 name=trace_names[cat],
                 legendgroup=str(cat),
                 showlegend=False,
-            ),
-            row=2,
-            col=2,
+            )
         )
-    return go_figure
+    return barplot_trace_list
 
 
 def build_combined_figure(df, mapbox_token, geojson):
-    go_figure, colors, trace_names = set_up_figure(mapbox_token, geojson)
+    colors = px.colors.qualitative.Bold
 
-    # Scattermapbox
-    go_figure = add_scattermap_traces(
-        df,
-        go_figure,
-        colors,
-        trace_names,
-    )
+    trace_names = [
+        "cheapest",
+        "below average",
+        "above average",
+        "most expensive",
+    ]
 
-    # Scatter plot
-    go_figure = add_scatter_traces(df, go_figure, colors, trace_names)
+    # Create lists with traces
+    scattermap_traces = list_scattermap_traces(df, colors, trace_names,)
+    scatter_traces = list_scatter_traces(df, colors, trace_names)
+    barplot_traces = list_barplot_traces(df, colors, trace_names)
 
-    # Bar plot
-    go_figure = add_barplot_traces(df, go_figure, colors, trace_names)
+    # Put them all into one figure
+    go_figure = set_up_figure(mapbox_token, geojson)
+    go_figure.add_traces(scattermap_traces, rows=1, cols=1)
+    go_figure.add_traces(scatter_traces, rows=2, cols=1)
+    go_figure.add_traces(barplot_traces, rows=2, cols=2)
 
     return go_figure
 
