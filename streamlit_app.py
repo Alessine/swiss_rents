@@ -161,7 +161,7 @@ def build_combined_figure(df, mapbox_token, geojson):
     ]
 
     # Create lists with traces
-    scattermap_traces = list_scattermap_traces(df, colors, trace_names,)
+    scattermap_traces = list_scattermap_traces(df, colors, trace_names)
     scatter_traces = list_scatter_traces(df, colors, trace_names)
     barplot_traces = list_barplot_traces(df, colors, trace_names)
 
@@ -224,7 +224,6 @@ st.text("")
 # User dependent variables
 raw_data_path = "data/raw/georef-switzerland-kanton.geojson"
 proc_data_path = "data/processed/rents_with_coords_clean.csv"
-proc_strings_path = "data/processed/hover_strings.csv"
 
 # Secrets
 mapbox_access_token = st.secrets["MAPBOX_ACCESS_TOKEN"]
@@ -235,7 +234,7 @@ df_plotting = deepcopy(df_proc)
 
 # Sidebar
 # Lottie icon
-lottie_url = "https://assets10.lottiefiles.com/packages/lf20_7ttkwwdk.json"  # purple
+lottie_url = "https://assets10.lottiefiles.com/packages/lf20_7ttkwwdk.json"
 lottie_pin = load_lottieurl(lottie_url)
 with st.sidebar:
     st_lottie(lottie_pin, speed=1, height=100)
