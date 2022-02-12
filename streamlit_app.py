@@ -118,11 +118,11 @@ def list_scatter_traces(df, colors, trace_names):
 def list_barplot_traces(df, colors, trace_names):
     df_grouped = (
         df.groupby(["Kanton", "Miete_Kategorie"])
-            .size()
-            .unstack(level=-1)
-            .fillna(0)
-            .sort_values("Kanton", ascending=False)
-            .reset_index()
+          .size()
+          .unstack(level=-1)
+          .fillna(0)
+          .sort_values("Kanton", ascending=False)
+          .reset_index()
     )
     df_grouped["Total_Kanton"] = df_grouped.iloc[:, 1:].sum(axis=1)
     barplot_trace_list = []
