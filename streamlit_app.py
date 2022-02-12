@@ -189,7 +189,7 @@ def build_combined_figure(df, mapbox_token, geojson):
 
 @st.cache
 def convert_df(df):
-    return df.to_csv().encode('utf-8')
+    return df.drop(columns="hover_strings_scatter").to_csv().encode('utf-8')
 
 
 # App layout
@@ -199,16 +199,16 @@ st.markdown("<h1 style='color: #7F3C8D'>Apartment Listings in Switzerland (2019)
 
 st.subheader("Objective")
 st.markdown("""With this app you can explore a collection of Swiss apartment listings from 2019 and 
-find out how different factors influence their rent.""")
+find out how different factors influence the rent.""")
 
 st.markdown("---")
 st.subheader("Analysis")
 
 left_col, right_col = st.columns([3, 1])
-left_col.markdown("""The listings were categorized based on their rent per square meter of floor space. 
-You can calculate this indicator for your own apartment and see in what category you fall.
+left_col.markdown("""The listings were categorized based on the rent per square meter of floor space. 
+You can calculate this indicator for your own apartment and see in what category it falls.
 
-The following categories seemed to give interesting insights:
+The following partitioning seemed to give interesting insights:
 * `< CHF 15.70/m²` — the cheapest 15% of all listings (lowest rent per square meter)
 * `≥ CHF 15.70 but < CHF 19.70/m²` — 35% of apartments below the average, but not within the cheapest 15%
 * `≥ CHF 19.70 but < CHF 26.10/m²` — 35% of apartments above the average, but not within the top 15%
@@ -237,6 +237,7 @@ st.text("")
 # User dependent variables
 raw_data_path = "data/raw/georef-switzerland-kanton.geojson"
 proc_data_path = "data/processed/rents_with_coords_clean.csv"
+proc_strings_path = "data/processed/hover_strings.csv"
 
 # Secrets
 mapbox_access_token = st.secrets["MAPBOX_ACCESS_TOKEN"]
@@ -287,7 +288,7 @@ st.markdown("---")
 st.subheader("Data Source")
 # Show the data itself
 if st.checkbox("Show Processed Data (first 10 rows)"):
-    st.dataframe(data=df_proc.head(10))
+    st.dataframe(data=df_proc.drop(columns="hover_strings_scatter").head(10))
 
 # Download button and link for data
 csv = convert_df(df_proc)
