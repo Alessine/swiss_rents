@@ -27,10 +27,10 @@ def load_data(raw_data, proc_data):
     return df, geojson
 
 
-def set_up_subplots():
+def set_up_figure(mapbox_token, geojson):
     colors = px.colors.qualitative.Bold
 
-    traces = [
+    trace_names = [
         "cheapest",
         "below average",
         "above average",
@@ -48,85 +48,7 @@ def set_up_subplots():
                         "<b>Apartments per Canton</b>"),
         column_widths=[2, 1],
     )
-    return go_figure, colors, traces
 
-
-def add_scattermap_traces(df, go_figure, colors, traces):
-    for cat, df_grouped in df.groupby("Miete_Kategorie"):
-        go_figure.add_trace(
-            go.Scattermapbox(
-                lon=df_grouped["lon"],
-                lat=df_grouped["lat"],
-                mode="markers",
-                marker=go.scattermapbox.Marker(size=5, color=colors[cat], opacity=0.5),
-                text=df_grouped["hover_strings_scatter"],
-                hovertemplate="%{text}<extra></extra>",
-                name=traces[cat],
-                legendgroup=str(cat),
-            ),
-            row=1,
-            col=1,
-        )
-    return go_figure
-
-
-def add_scatter_traces(df, go_figure, colors, traces):
-    for cat, df_grouped in df.groupby("Miete_Kategorie"):
-        go_figure.add_trace(
-            go.Scatter(
-                x=df_grouped["Fläche"],
-                y=df_grouped["Mietpreis_Brutto"],
-                mode="markers",
-                marker={"color": colors[cat], "opacity": 0.5},
-                text=df_grouped["hover_strings_scatter"],
-                hovertemplate="%{text}<extra></extra>",
-                name=traces[cat],
-                legendgroup=str(cat),
-                showlegend=False,
-            ),
-            row=2,
-            col=1,
-        )
-    return go_figure
-
-
-def add_barplot_traces(df, go_figure, colors, traces):
-    df_grouped = (
-        df.groupby(["Kanton", "Miete_Kategorie"])
-            .size()
-            .unstack(level=-1)
-            .fillna(0)
-            .sort_values("Kanton", ascending=False)
-            .reset_index()
-    )
-    df_grouped["Total_Kanton"] = df_grouped.iloc[:, 1:].sum(axis=1)
-
-    for cat in df["Miete_Kategorie"].unique():
-        hover_strings = [
-            f"{round(num_per_canton / total_canton * 100, 2)}%"
-            for num_per_canton, total_canton in zip(
-                df_grouped.loc[:, cat], df_grouped["Total_Kanton"]
-            )
-        ]
-        go_figure.add_trace(
-            go.Bar(
-                y=df_grouped["Kanton"],
-                x=df_grouped.loc[:, cat],
-                orientation="h",
-                marker_color=colors[cat],
-                text=hover_strings,
-                hovertemplate="%{text}<extra></extra>",
-                name=traces[cat],
-                legendgroup=str(cat),
-                showlegend=False,
-            ),
-            row=2,
-            col=2,
-        )
-    return go_figure
-
-
-def define_figure_layout(go_figure, mapbox_token, geojson):
     # Subplot title font size
     go_figure.layout.annotations[0].update(font_size=24, x=0.175, y=1.01)
     go_figure.layout.annotations[1].update(font_size=24, x=0.17, y=0.455)
@@ -161,28 +83,101 @@ def define_figure_layout(go_figure, mapbox_token, geojson):
         template="simple_white",
         barmode="stack",
     )
+
+    return go_figure, colors, trace_names
+
+
+def add_scattermap_traces(df, go_figure, colors, trace_names):
+    for cat, df_grouped in df.groupby("Miete_Kategorie"):
+        go_figure.add_trace(
+            go.Scattermapbox(
+                lon=df_grouped["lon"],
+                lat=df_grouped["lat"],
+                mode="markers",
+                marker=go.scattermapbox.Marker(size=5, color=colors[cat], opacity=0.5),
+                text=df_grouped["hover_strings_scatter"],
+                hovertemplate="%{text}<extra></extra>",
+                name=trace_names[cat],
+                legendgroup=str(cat),
+            ),
+            row=1,
+            col=1,
+        )
+    return go_figure
+
+
+def add_scatter_traces(df, go_figure, colors, trace_names):
+    for cat, df_grouped in df.groupby("Miete_Kategorie"):
+        go_figure.add_trace(
+            go.Scatter(
+                x=df_grouped["Fläche"],
+                y=df_grouped["Mietpreis_Brutto"],
+                mode="markers",
+                marker={"color": colors[cat], "opacity": 0.5},
+                text=df_grouped["hover_strings_scatter"],
+                hovertemplate="%{text}<extra></extra>",
+                name=trace_names[cat],
+                legendgroup=str(cat),
+                showlegend=False,
+            ),
+            row=2,
+            col=1,
+        )
+    return go_figure
+
+
+def add_barplot_traces(df, go_figure, colors, trace_names):
+    df_grouped = (
+        df.groupby(["Kanton", "Miete_Kategorie"])
+            .size()
+            .unstack(level=-1)
+            .fillna(0)
+            .sort_values("Kanton", ascending=False)
+            .reset_index()
+    )
+    df_grouped["Total_Kanton"] = df_grouped.iloc[:, 1:].sum(axis=1)
+
+    for cat in df["Miete_Kategorie"].unique():
+        hover_strings = [
+            f"{round(num_per_canton / total_canton * 100, 2)}%"
+            for num_per_canton, total_canton in zip(
+                df_grouped.loc[:, cat], df_grouped["Total_Kanton"]
+            )
+        ]
+        go_figure.add_trace(
+            go.Bar(
+                y=df_grouped["Kanton"],
+                x=df_grouped.loc[:, cat],
+                orientation="h",
+                marker_color=colors[cat],
+                text=hover_strings,
+                hovertemplate="%{text}<extra></extra>",
+                name=trace_names[cat],
+                legendgroup=str(cat),
+                showlegend=False,
+            ),
+            row=2,
+            col=2,
+        )
     return go_figure
 
 
 def build_combined_figure(df, mapbox_token, geojson):
-    go_figure, colors, traces = set_up_subplots()
-
-    # Layout
-    go_figure = define_figure_layout(go_figure, mapbox_token, geojson)
+    go_figure, colors, trace_names = set_up_figure(mapbox_token, geojson)
 
     # Scattermapbox
     go_figure = add_scattermap_traces(
         df,
         go_figure,
         colors,
-        traces,
+        trace_names,
     )
 
     # Scatter plot
-    go_figure = add_scatter_traces(df, go_figure, colors, traces)
+    go_figure = add_scatter_traces(df, go_figure, colors, trace_names)
 
     # Bar plot
-    go_figure = add_barplot_traces(df, go_figure, colors, traces)
+    go_figure = add_barplot_traces(df, go_figure, colors, trace_names)
 
     return go_figure
 
