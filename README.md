@@ -1,7 +1,7 @@
 # Swiss Rents (Streamlit App)
 
 
-![Screenshot of the app showing a map of Switerland with the location of listed apartments](reports/img/220207_screenshot.png)
+![Screenshot of the app showing a map of Switerland with the location of listed apartments](reports/img/220213_screenshot.png)
 
 <b>Project Status: Active -- [Visit the App](https://share.streamlit.io/alessine/swiss_rents)</b>
 
