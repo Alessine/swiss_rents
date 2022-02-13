@@ -16,6 +16,7 @@ The purpose of this project is to showcase how different factors influence the r
 * Data Pre-processing
 * APIs
 * Data Visualization
+* Modeling
 
 ### Technologies
 * Python: Pandas, Requests, Plotly, Streamlit
