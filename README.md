@@ -23,12 +23,19 @@ The purpose of this project is to showcase how different factors influence the r
 * Deployment: Streamlit Cloud
 
 ## Project Description
-(Provide more detailed overview of the project.
-Talk a bit about your data sources and what questions and hypothesis you are exploring.
-What specific data analysis/visualization and modelling work are you using to solve the
-problem? What blockers and challenges are you facing?
-Feel free to number or bullet point things here)
+Data on the price of housing is not so easy to come by. However, it is highly relevant in the real estate market as well as for individuals. The data used for this project was scraped from several different websites in 2019 and is publicly available. It contains about 50'000 rows of data, which can serve as a good basis for an analysis of the Swiss rental market. For the purpose of this project, the Swisstopo REFRAME API was used to supplement the local LV95 coordinates with GPS data for each apartment listing.
+
+These were the two main assumptions formed from a basic, intuitive understanding of rents in Switzerland: 
+<ol>
+<li> The location (especially the proximity to urban centres) and the size of an apartment have a strong influence on the rent.</li>
+<li> Other factors such as interior furnishing, age of the building and the type of ownership (public / private / cooperative / etc.) can lead to significant deviations from the expected rent based on location and size.</li>
+</ol>
+
+From the visualizations in the app, it is clear that the first assumption holds true. Size and location can be used to explain a large part of the variation in the dataset. To further quantify these effects, a linear regression model was put together in the modeling notebook linked below. The remaining variation could be due to the factors mentioned in the second assumption. However, the dataset does not contain the required information.
+
+These insights from the data exploration and modeling are communicated with the help of a Streamlit App. The Plotly figures as well as the Streamlit widgets allow the user to interact with the visualizations, thereby enabling a personalized experience. The main difficulty faced with this type of presentation is the time required to plot the data on Streamlit. Removing unnecessary data, performing preprocessing steps outside the app and caching the data were three approaches that helped optimize performance.
 
 ## Featured Notebooks/Scripts
-* [Notebook: Data pre-processing and Visualization](https://github.com/Alessine/swiss_rents/blob/master/notebooks/nb2_220202_advanced_viz.ipynb)
+* [Notebook 1: Data Exploration and Modeling](https://github.com/Alessine/swiss_rents/blob/master/notebooks/nb1_220131_basic_eda_modelling.ipynb )
+* [Notebook 2: Data pre-processing and Visualization](https://github.com/Alessine/swiss_rents/blob/master/notebooks/nb2_220202_advanced_viz.ipynb)
 * [Python Script: Streamlit App](https://github.com/Alessine/swiss_rents/blob/master/streamlit_app.py)
