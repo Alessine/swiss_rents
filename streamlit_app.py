@@ -18,7 +18,7 @@ def load_lottieurl(url: str):
     return r.json()
 
 
-@st.cache
+@st.cache(hash_funcs={'_json.Scanner': hash})
 def load_data(raw_data, proc_data):
     df = pd.read_csv(proc_data)
     df_small = df.sample(frac=0.2)
