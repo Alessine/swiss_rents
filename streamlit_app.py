@@ -21,10 +21,11 @@ def load_lottieurl(url: str):
 @st.cache
 def load_data(raw_data, proc_data):
     df = pd.read_csv(proc_data)
+    df_small = df.sample(frac=0.2)
     with open(raw_data) as response:
         geojson = json.load(response)
 
-    return df, geojson
+    return df_small, geojson
 
 
 def set_up_figure(mapbox_token, geojson):
@@ -284,11 +285,9 @@ st.download_button(
     file_name='swiss_rents_df.csv',
     mime='text/csv',
 )
-st.write("The unprocessed data is freely available at: https://datenportal.info/wohnungsmarkt/wohnungsmieten/")
+st.write("The unprocessed data was made available for use for any purpose (including commercial) under a creative commons license at: https://datenportal.info/wohnungsmarkt/wohnungsmieten/")
 
 st.markdown("---")
 st.markdown("<b>A Streamlit web app by Angela Niederberger.</b>", unsafe_allow_html=True)
 st.markdown("""I love getting feedback! 
-The code for this app is available on [GitHub](https://github.com/Alessine/swiss_rents). 
-You can reach out to me on [LinkedIn](https://www.linkedin.com/in/angela-niederberger) 
-or [Twitter](https://twitter.com/angie_k_n).""")
+The code for this app is available on [GitHub](https://github.com/Alessine/swiss_rents) and you can reach out to me on [LinkedIn](https://www.linkedin.com/in/angela-niederberger).""")
