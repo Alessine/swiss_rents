@@ -218,7 +218,8 @@ with right_col.form("Rent/m²", clear_on_submit=True):
         if user_floor_space == 0:
             st.write("Please enter floor space")
         else:
-            st.write(f"Rent/m²: {user_rent / user_floor_space}")
+            rent_per_m2 = user_rent / user_floor_space
+            st.write(f"Rent/m²: CHF {round(rent_per_m2, 2)}")
 
 st.text("")
 
@@ -253,7 +254,8 @@ with st.sidebar.form("Selection Criteria"):
                                       (df_plotting["Zimmer"] >= num_rooms)]
 
         elif place_sel not in list(df_plotting["Ort"].drop_duplicates()):
-            st.write(f"There are no apartment listings in {place_sel}.")
+            st.write(f"<b style='color: #FF6B6B'>There are no apartment listings in {place_sel}.</b>",
+                     unsafe_allow_html=True)
 
         else:
             df_plotting = df_plotting[(df_plotting["Ort"] == place_sel) &
