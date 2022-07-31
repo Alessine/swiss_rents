@@ -3,7 +3,7 @@
 
 ![Screenshot of the app showing a map of Switerland with the location of listed apartments](reports/img/220213_screenshot.png)
 
-<b>Project Status: Active -- [Visit the App](https://share.streamlit.io/alessine/swiss_rents)</b>
+<b>Project Status: Active -- [Visit the App](https://alessine-swiss-rents-src01-overview-ds8h4e.streamlitapp.com/)</b>
 
 ## Project Intro/Objective
 The purpose of this project is to showcase how different factors influence the rents of apartments in Switzerland. Since almost 60% of residents in Switzerland live on rented properties, rather than owning a house, most people at one point face the question of whether their rent is within the normal range and how they might be able to find a more affordable space to live in. This app gives people the chance to explore a collection of apartment listings from 2019.
